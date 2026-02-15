@@ -1,0 +1,67 @@
+{
+  "expo": {
+    "name": "Miniproject",
+    "slug": "Miniproject",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/images/icon.png",
+    "scheme": "Miniproject",
+    "userInterfaceStyle": "automatic",
+    "newArchEnabled": true,
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.anonymous.Miniproject"
+    },  
+    "android": {
+      "package": "com.anonymous.Miniproject",
+      "adaptiveIcon": {
+        "backgroundColor": "#E6F4FE",
+        "foregroundImage": "./assets/images/android-icon-foreground.png",
+        "backgroundImage": "./assets/images/android-icon-background.png",
+        "monochromeImage": "./assets/images/android-icon-monochrome.png"
+      },
+      "edgeToEdgeEnabled": true,
+      "predictiveBackGestureEnabled": false
+    },
+    "web": {
+      "output": "static",
+      "favicon": "./assets/images/favicon.png"
+    },
+    "plugins": [
+      "expo-router",
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/images/splash-icon.png",
+          "imageWidth": 200,
+          "resizeMode": "contain",
+          "backgroundColor": "#ffffff",
+          "dark": {
+            "backgroundColor": "#000000"
+          }
+        }
+      ],
+      [
+        "@reactvision/react-viro",
+        {
+          "android": {
+            "xRMode": "AR"
+          },
+          "ios": {
+        	  "cameraUsagePermission": "Miniproject Kit uses your camera for AR experiences.",
+            "microphoneUsagePermission": "Miniproject Kit uses your microphone for AR experiences.",
+            "photosPermission": "Miniproject Kit would like to read photos for AR experiences.",
+            "savephotosPermission": "Miniproject Kit would like to save photos to your library during AR experiences."
+          },
+          "googleCloudApiKey":"Your Google Cloud API Key",
+          "cloudAnchorProvider": "arcore",
+          "geospatialAnchorProvider" : "arcore"
+        }
+      ]
+    ],
+    "experiments": {
+      "typedRoutes": true,
+      "reactCompiler": true
+    }
+  }
+}
