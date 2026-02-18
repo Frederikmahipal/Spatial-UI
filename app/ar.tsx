@@ -1,20 +1,30 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { StyleSheet, View, Text, TouchableOpacity } from 'react-native';
 import { useRouter } from 'expo-router';
 import Constants from 'expo-constants';
-import { useApp } from '@/contexts/AppContext';
-import SelectionScene from '@/components/ar-scenes/SelectionScene';
+import BalloonScene from '@/components/BalloonScene';
+import { SCORE_KEY, CAUGHT_KEY } from '@/constants/game';
 
 const isExpoGo = Constants.appOwnership === 'expo';
 const ViroARSceneNavigator = isExpoGo
   ? null
   : require('@reactvision/react-viro').ViroARSceneNavigator;
 
-const PLACE_IN_FRONT_KEY = '__placeInFront';
-
 export default function ARScreen() {
   const router = useRouter();
-  const { condition } = useApp();
+  const [score, setScore] = useState(0);
+
+  useEffect(() => {
+    // HandTrackingScene calls this callback whenever a balloon is caught
+    (global as any)[CAUGHT_KEY] = () => {
+      const current: number = (global as any)[SCORE_KEY]?.() ?? 0;
+      setScore(current);
+    };
+    return () => {
+      delete (global as any)[CAUGHT_KEY];
+      delete (global as any)[SCORE_KEY];
+    };
+  }, []);
 
   if (isExpoGo) {
     return (
@@ -28,26 +38,28 @@ export default function ARScreen() {
   return (
     <View style={styles.container}>
       <ViroARSceneNavigator
-        initialScene={{
-          scene: SelectionScene,
-          passProps: { condition: condition ?? 'baseline' },
-        }}
+        initialScene={{ scene: BalloonScene }}
         style={StyleSheet.absoluteFill}
       />
-      {/* Overlay: real RN buttons so they're tappable */}
+
+      {/* ── Overlay ── */}
       <View style={styles.overlay} pointerEvents="box-none">
-        <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
-          <Text style={styles.backButtonText}>← Back</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={styles.placeButton}
-          onPress={() => (global as any)[PLACE_IN_FRONT_KEY]?.()}
-        >
-          <Text style={styles.placeButtonText}>Place in front of me</Text>
-        </TouchableOpacity>
-      </View>
-      <View style={styles.reticle} pointerEvents="none">
-        <View style={styles.reticleDot} />
+        {/* Top bar: back + score */}
+        <View style={styles.topBar}>
+          <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
+            <Text style={styles.backText}>← Back</Text>
+          </TouchableOpacity>
+          <View style={styles.scoreBadge}>
+            <Text style={styles.scoreText}>🎈 {score}</Text>
+          </View>
+        </View>
+
+        {/* Bottom hint */}
+        <View style={styles.bottomBar}>
+          <Text style={styles.hint}>
+            Move your phone toward the balloons to catch them!
+          </Text>
+        </View>
       </View>
     </View>
   );
@@ -66,39 +78,37 @@ const styles = StyleSheet.create({
   text: { fontSize: 16, color: '#a0a0a0', textAlign: 'center' },
   overlay: {
     ...StyleSheet.absoluteFillObject,
-    paddingTop: 56,
+    paddingTop: 48,
     paddingHorizontal: 16,
+    justifyContent: 'space-between',
+  },
+  topBar: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
     alignItems: 'center',
   },
   backButton: {
-    alignSelf: 'flex-start',
     paddingVertical: 10,
     paddingHorizontal: 16,
     backgroundColor: 'rgba(0,0,0,0.5)',
     borderRadius: 8,
   },
-  backButtonText: { fontSize: 16, color: '#fff', fontWeight: '600' },
-  placeButton: {
-    position: 'absolute',
-    bottom: 48,
-    paddingVertical: 14,
-    paddingHorizontal: 24,
-    backgroundColor: 'rgba(59, 130, 246, 0.95)',
+  backText: { fontSize: 16, color: '#fff', fontWeight: '600' },
+  scoreBadge: {
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    backgroundColor: 'rgba(0,0,0,0.5)',
     borderRadius: 12,
   },
-  placeButtonText: { fontSize: 16, color: '#fff', fontWeight: '600' },
-  reticle: {
-    ...StyleSheet.absoluteFillObject,
-    justifyContent: 'center',
-    alignItems: 'center',
-    pointerEvents: 'none',
-  },
-  reticleDot: {
-    width: 12,
-    height: 12,
-    borderRadius: 6,
-    backgroundColor: 'rgba(255,255,255,0.9)',
-    borderWidth: 2,
-    borderColor: 'rgba(0,0,0,0.3)',
+  scoreText: { fontSize: 22, color: '#fff', fontWeight: '700' },
+  bottomBar: { alignItems: 'center', paddingBottom: 48 },
+  hint: {
+    fontSize: 14,
+    color: '#fff',
+    backgroundColor: 'rgba(0,0,0,0.4)',
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+    textAlign: 'center',
   },
 });
