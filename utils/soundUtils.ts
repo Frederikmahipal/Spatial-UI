@@ -111,7 +111,9 @@ export async function playHapticFeedback(
       heavy: Haptics.ImpactFeedbackStyle.Heavy,
     };
     await Haptics.impactAsync(map[intensity]);
-  } catch (_) { /* */ }
+  } catch (e) { 
+    console.warn('[Haptics error]', e);
+  }
 }
 
 /* ═══════════════════════════════════════════════

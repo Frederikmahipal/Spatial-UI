@@ -30,7 +30,7 @@ export const SPAWN_HEIGHT_MAX = 0.35;
 export const MIN_BALLOON_SPACING = 0.25;
 
 /* ── Thresholds ── */
-export const CATCH_THRESHOLD = 0.15;       // 15 cm → caught
+export const CATCH_THRESHOLD = 0.08;       // 8 cm → caught (requires touching the 6.5cm balloon)
 export const CLOSE_THRESHOLD = 0.55;       // 55 cm → beeping starts
 
 /* ── Timing ── */

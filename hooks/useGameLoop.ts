@@ -132,13 +132,14 @@ export default function useGameLoop(): GameState {
         const interval = MIN_BEEP_INTERVAL + ratio * (MAX_BEEP_INTERVAL - MIN_BEEP_INTERVAL);
         if (now - lastBeepTimeRef.current > interval) {
           playBeep(500 + (1 - ratio) * 1100, 0.08, 0.35);
+          
           lastBeepTimeRef.current = now;
         }
       }
 
-      // throttled visual update (~20 fps)
+      // throttled visual update (~10 fps to save battery/perf, AR overlay is 60fps native anyway)
       const now = Date.now();
-      if (now - lastVisualUpdateRef.current > 50) {
+      if (now - lastVisualUpdateRef.current > 100) {
         setClosestId(minId);
         setClosestDist(minDist);
         lastVisualUpdateRef.current = now;
