@@ -8,10 +8,8 @@ import {
 } from '@reactvision/react-viro';
 
 // side-effect: registers Viro materials
-import '@/constants/game';
-
-import type { Vec3, Balloon } from '@/types/game';
 import { BALLOON_RADIUS, CATCH_THRESHOLD, CLOSE_THRESHOLD } from '@/constants/game';
+import type { Vec3, Balloon } from '@/types/game';
 import useGameLoop from '@/hooks/useGameLoop';
 
 /* ── Visual helpers ── */
