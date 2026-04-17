@@ -7,7 +7,7 @@ import { getSelectedTechnique, setSelectedTechnique } from '@/store/experimentSt
 import type { TechniqueId } from '@/types/experiment';
 
 function isTechniqueId(value: string | undefined): value is TechniqueId {
-  return value === 'baseline' || value === 'assisted';
+  return value === 'baseline' || value === 'assisted' || value === 'invisible';
 }
 
 export default function InstructionsScreen() {

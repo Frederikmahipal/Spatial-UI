@@ -91,6 +91,7 @@ export interface TrialBlockState {
   targetPosition: Vec3 | null;
   targetMaterial: string;
   targetScale: Vec3;
+  targetVisible: boolean;
   onCameraTransformUpdate: (event: ViroCameraTransform) => void;
 }
 
@@ -99,6 +100,7 @@ export default function useTargetSelectionBlock(): TrialBlockState {
   const [targetPosition, setTargetPosition] = useState<Vec3 | null>(null);
   const [targetMaterial, setTargetMaterial] = useState('targetIdle');
   const [targetScale, setTargetScale] = useState<Vec3>([1, 1, 1]);
+  const [targetVisible, setTargetVisible] = useState(true);
 
   const phaseRef = useRef<TrialPhase>('initializing');
   const blockStartRef = useRef(0);
@@ -117,6 +119,8 @@ export default function useTargetSelectionBlock(): TrialBlockState {
   const advanceTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
+    const technique = getArTechnique();
+    setTargetVisible(technique !== 'invisible');
     initSounds();
     return () => {
       mountedRef.current = false;
@@ -134,7 +138,8 @@ export default function useTargetSelectionBlock(): TrialBlockState {
     const isAligned = technique === 'baseline'
       ? Boolean(metrics?.baselineAligned)
       : Boolean(metrics?.assistedAligned);
-    const dwellProgress = technique === 'assisted' && dwellStartRef.current !== null
+    const isDwellTechnique = technique === 'assisted' || technique === 'invisible';
+    const dwellProgress = isDwellTechnique && dwellStartRef.current !== null
       ? clamp((Date.now() - dwellStartRef.current) / DWELL_SELECTION_MS, 0, 1)
       : 0;
     const elapsedMs = trialStartRef.current === 0 ? 0 : Date.now() - trialStartRef.current;
@@ -350,6 +355,7 @@ export default function useTargetSelectionBlock(): TrialBlockState {
 
   const onCameraTransformUpdate = useCallback((event: ViroCameraTransform) => {
     const technique = getArTechnique();
+    const isDwellTechnique = technique === 'assisted' || technique === 'invisible';
     const transform = isTransformObject(event.cameraTransform) ? event.cameraTransform : event;
     const camera: CameraSnapshot = {
       position: transform.position as Vec3,
@@ -375,7 +381,7 @@ export default function useTargetSelectionBlock(): TrialBlockState {
         targetDistanceM: null,
         timeRemainingMs: TRIAL_TIMEOUT_MS,
         timeProgress: 1,
-        confirmMode: technique === 'baseline' ? 'tap' : 'dwell',
+confirmMode: isDwellTechnique ? 'dwell' : 'tap',
         dwellProgress: 0,
       });
 
@@ -403,7 +409,8 @@ export default function useTargetSelectionBlock(): TrialBlockState {
       return;
     }
 
-    if (technique === 'assisted' && metrics.assistReady) {
+    const dwellTechnique = technique === 'assisted' || technique === 'invisible';
+    if (dwellTechnique && metrics.assistReady) {
       if (dwellStartRef.current === null) {
         dwellStartRef.current = Date.now();
       }
@@ -415,7 +422,7 @@ export default function useTargetSelectionBlock(): TrialBlockState {
       dwellStartRef.current = null;
     }
 
-    if (technique === 'assisted' && metrics.assistedAligned) {
+    if (dwellTechnique && metrics.assistedAligned) {
       const now = Date.now();
       const interval = 140 + (1 - metrics.alignmentScore) * 260;
       if (now - lastBeepTimeRef.current > interval) {
@@ -445,5 +452,5 @@ export default function useTargetSelectionBlock(): TrialBlockState {
     emitRunningOverlay(metrics);
   }, [completeTrial, emitRunningOverlay, failTrial, startTrial]);
 
-  return { phase, targetPosition, targetMaterial, targetScale, onCameraTransformUpdate };
+  return { phase, targetPosition, targetMaterial, targetScale, targetVisible, onCameraTransformUpdate };
 }

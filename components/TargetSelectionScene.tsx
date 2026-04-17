@@ -12,7 +12,7 @@ import type { Vec3 } from '@/types/game';
 import { TARGET_RADIUS } from '@/constants/experiment';
 
 export default function TargetSelectionScene() {
-  const { phase, targetPosition, targetMaterial, targetScale, onCameraTransformUpdate } =
+  const { phase, targetPosition, targetMaterial, targetScale, targetVisible, onCameraTransformUpdate } =
     useTargetSelectionBlock();
 
   return (
@@ -29,6 +29,7 @@ export default function TargetSelectionScene() {
           materials={[targetMaterial]}
           heightSegmentCount={20}
           widthSegmentCount={20}
+          opacity={targetVisible ? 1 : 0}
           facesOutward
         />
       )}

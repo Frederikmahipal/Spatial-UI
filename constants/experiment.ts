@@ -59,4 +59,17 @@ export const TECHNIQUES: Record<TechniqueId, TechniqueMeta> = {
       'When alignment is stable, the target is selected automatically.',
     ],
   },
+  invisible: {
+    id: 'invisible',
+    title: 'Invisible Target (Proximity)',
+    shortLabel: 'Invisible',
+    summary:
+      'Same as assisted, but the target is invisible. Rely on audio feedback to align and select.',
+    instructions: [
+      'Aim with the center reticle.',
+      'Listen for the audio feedback to guide alignment.',
+      'Move slightly closer if needed and hold steady.',
+      'The target is selected automatically when aligned.',
+    ],
+  },
 };

@@ -1,6 +1,6 @@
 import type { Vec3 } from '@/types/game';
 
-export type TechniqueId = 'baseline' | 'assisted';
+export type TechniqueId = 'baseline' | 'assisted' | 'invisible';
 
 export type TrialPhase = 'initializing' | 'running' | 'complete';
 

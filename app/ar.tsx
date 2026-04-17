@@ -14,7 +14,7 @@ import type { BlockResult, OverlayState, TechniqueId } from '@/types/experiment'
 const isExpoGo = Constants.appOwnership === 'expo';
 
 function isTechniqueId(value: string | undefined): value is TechniqueId {
-  return value === 'baseline' || value === 'assisted';
+  return value === 'baseline' || value === 'assisted' || value === 'invisible';
 }
 
 export default function ARScreen() {
