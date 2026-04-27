@@ -1,4 +1,4 @@
-# Spatial User Interfaces Mini-Project
+d# Spatial User Interfaces Mini-Project
 
 This project is a mobile AR prototype for comparing two pointing techniques for target selection.
 

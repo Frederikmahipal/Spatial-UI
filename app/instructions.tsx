@@ -1,10 +1,11 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 
 import { TECHNIQUES } from '@/constants/experiment';
 import { getSelectedTechnique, setSelectedTechnique } from '@/store/experimentStore';
 import type { TechniqueId } from '@/types/experiment';
+import { initSounds } from '@/utils/soundUtils';
 
 function isTechniqueId(value: string | undefined): value is TechniqueId {
   return value === 'baseline' || value === 'assisted' || value === 'invisible';
@@ -15,8 +16,14 @@ export default function InstructionsScreen() {
   const params = useLocalSearchParams<{ technique?: string }>();
   const technique = isTechniqueId(params.technique) ? params.technique : getSelectedTechnique();
   const meta = TECHNIQUES[technique];
+  const [isStarting, setIsStarting] = useState(false);
 
-  const handleStart = () => {
+  useEffect(() => { initSounds(); }, []);
+
+  const handleStart = async () => {
+    if (isStarting) return;
+    setIsStarting(true);
+    await initSounds();
     setSelectedTechnique(technique);
     router.push({
       pathname: '/ar',
@@ -47,8 +54,8 @@ export default function InstructionsScreen() {
         <TouchableOpacity style={styles.secondaryButton} onPress={() => router.back()}>
           <Text style={styles.secondaryButtonText}>Back</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.primaryButton} onPress={handleStart}>
-          <Text style={styles.primaryButtonText}>Start Block</Text>
+        <TouchableOpacity style={styles.primaryButton} onPress={handleStart} disabled={isStarting}>
+          <Text style={styles.primaryButtonText}>{isStarting ? 'Starting...' : 'Start Block'}</Text>
         </TouchableOpacity>
       </View>
     </View>

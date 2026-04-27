@@ -13,36 +13,52 @@ let beepPool: Audio.Sound[] = [];
 let popSound: Audio.Sound | null = null;
 let poolIndex = 0;
 let ready = false;
+let initPromise: Promise<void> | null = null;
+
+export function isSoundsReady(): boolean {
+  return ready;
+}
 
 /** Call once at scene mount to warm up the audio pool. */
 export async function initSounds(): Promise<void> {
   if (ready) return;
+  if (initPromise) return initPromise;
+
+  initPromise = initSoundsInternal();
+  await initPromise;
+}
+
+async function initSoundsInternal(): Promise<void> {
   try {
+    console.warn('[sound] starting init');
     await Audio.setAudioModeAsync({
       playsInSilentModeIOS: true,
       staysActiveInBackground: false,
       shouldDuckAndroid: true,
     });
+    console.warn('[sound] audio mode set');
 
     const beepUrl = wavToDataUrl(generateSineWav(880, 0.1));
-    for (let i = 0; i < POOL_SIZE; i++) {
-      const { sound } = await Audio.Sound.createAsync(
-        { uri: beepUrl },
-        { shouldPlay: false, volume: 0.3 },
-      );
-      beepPool.push(sound);
-    }
-
     const popUrl = wavToDataUrl(generatePopWav());
-    const { sound: pop } = await Audio.Sound.createAsync(
-      { uri: popUrl },
-      { shouldPlay: false, volume: 0.55 },
-    );
+    console.warn('[sound] wav generated, loading pool...');
+
+    const [beepResults, { sound: pop }] = await Promise.all([
+      Promise.all(
+        Array.from({ length: POOL_SIZE }, () =>
+          Audio.Sound.createAsync({ uri: beepUrl }, { shouldPlay: false, volume: 0.3 }),
+        ),
+      ),
+      Audio.Sound.createAsync({ uri: popUrl }, { shouldPlay: false, volume: 0.55 }),
+    ]);
+    beepPool = beepResults.map(({ sound }) => sound);
     popSound = pop;
 
     ready = true;
+    console.warn('[sound] ready — pool size:', beepPool.length);
   } catch (e) {
-    console.warn('[sound] init error', e);
+    console.warn('[sound] init FAILED:', e);
+  } finally {
+    initPromise = null;
   }
 }
 
@@ -58,6 +74,7 @@ export async function cleanupSounds(): Promise<void> {
   popSound = null;
   poolIndex = 0;
   ready = false;
+  initPromise = null;
 }
 
 /**
@@ -71,7 +88,10 @@ export async function playBeep(
   _duration = 0.1,
   volume = 0.3,
 ): Promise<void> {
-  if (!ready || beepPool.length === 0) return;
+  if (!ready || beepPool.length === 0) {
+    console.warn('[sound] playBeep skipped — ready:', ready, 'pool:', beepPool.length);
+    return;
+  }
   try {
     const sound = beepPool[poolIndex];
     poolIndex = (poolIndex + 1) % beepPool.length;
@@ -80,11 +100,11 @@ export async function playBeep(
     await sound.setStatusAsync({
       positionMillis: 0,
       rate,
-      shouldCorrectPitch: false, // we *want* pitch to shift with rate
+      shouldCorrectPitch: false,
       volume,
       shouldPlay: true,
     });
-  } catch (_) { /* swallow – game loop must not throw */ }
+  } catch (e) { console.warn('[sound] playBeep error:', e); }
 }
 
 /** Satisfying "pop" for catching a balloon. */

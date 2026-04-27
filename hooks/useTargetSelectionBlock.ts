@@ -22,7 +22,7 @@ import {
   getArTechnique,
   registerConfirmHandler,
 } from '@/store/arSession';
-import { playBeep, playHapticFeedback, playPop, initSounds, cleanupSounds } from '@/utils/soundUtils';
+import { playBeep, playHapticFeedback, playPop, initSounds, cleanupSounds, isSoundsReady } from '@/utils/soundUtils';
 import {
   add,
   clamp,
@@ -113,6 +113,7 @@ export default function useTargetSelectionBlock(): TrialBlockState {
   const dwellStartRef = useRef<number | null>(null);
   const lastVisualUpdateRef = useRef(0);
   const lastBeepTimeRef = useRef(0);
+  const lastHapticTimeRef = useRef(0);
   const initializationStartRef = useRef<Vec3 | null>(null);
   const initializationFramesRef = useRef(0);
   const mountedRef = useRef(true);
@@ -130,6 +131,21 @@ export default function useTargetSelectionBlock(): TrialBlockState {
       clearArSession();
       cleanupSounds();
     };
+  }, []);
+
+  useEffect(() => {
+    const id = setInterval(() => {
+      if (phaseRef.current !== 'running' || !activeTargetRef.current) return;
+      const metrics = latestMetricsRef.current;
+      const normalizedError = metrics ? Math.min(metrics.angularErrorRad / 0.5, 1) : 1;
+      const interval = 150 + normalizedError * 650;
+      const now = Date.now();
+      if (now - lastBeepTimeRef.current > interval) {
+        playBeep(900 + (1 - normalizedError) * 700, 0.08, 0.45);
+        if (isSoundsReady()) lastBeepTimeRef.current = now;
+      }
+    }, 50);
+    return () => clearInterval(id);
   }, []);
 
   const emitRunningOverlay = useCallback((metrics: TrialMetrics | null) => {
@@ -224,6 +240,8 @@ export default function useTargetSelectionBlock(): TrialBlockState {
     trialMissesRef.current = 0;
     dwellStartRef.current = null;
     trialStartRef.current = Date.now();
+    lastBeepTimeRef.current = 0;
+    lastHapticTimeRef.current = 0;
     setTargetPosition(position);
     setTargetMaterial('targetIdle');
     setTargetScale([1, 1, 1]);
@@ -422,12 +440,13 @@ confirmMode: isDwellTechnique ? 'dwell' : 'tap',
       dwellStartRef.current = null;
     }
 
-    if (dwellTechnique && metrics.assistedAligned) {
+    {
       const now = Date.now();
-      const interval = 140 + (1 - metrics.alignmentScore) * 260;
-      if (now - lastBeepTimeRef.current > interval) {
-        playBeep(700 + metrics.alignmentScore * 900, 0.08, 0.24);
-        lastBeepTimeRef.current = now;
+      const normalizedError = Math.min(metrics.angularErrorRad / 0.5, 1);
+      const hapticInterval = Math.max(350, 150 + normalizedError * 650);
+      if (now - lastHapticTimeRef.current > hapticInterval) {
+        playHapticFeedback('light');
+        lastHapticTimeRef.current = now;
       }
     }
 
