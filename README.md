@@ -38,7 +38,7 @@ The comparison uses the same task for both techniques.
 
 - One balloon appears at a time
 - Each technique uses `10 trials`
-- Each trial has a `5 second` time limit
+- Each trial has a `10 second` time limit
 - There is a short delay between balloons
 
 ### Trial Outcome

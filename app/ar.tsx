@@ -6,7 +6,7 @@ import { ViroARSceneNavigator } from '@reactvision/react-viro';
 
 import Reticle from '@/components/Reticle';
 import TargetSelectionScene from '@/components/TargetSelectionScene';
-import { TECHNIQUES } from '@/constants/experiment';
+import { TECHNIQUES, TOTAL_TRIALS, TRIAL_TIMEOUT_MS } from '@/constants/experiment';
 import { clearArSession, configureArSession, requestManualConfirm } from '@/store/arSession';
 import { getSelectedTechnique, setLatestBlockResult } from '@/store/experimentStore';
 import type { BlockResult, OverlayState, TechniqueId } from '@/types/experiment';
@@ -28,13 +28,13 @@ export default function ARScreen() {
     technique: TECHNIQUES[technique],
     phase: 'initializing',
     currentTrial: 0,
-    totalTrials: 10,
+    totalTrials: TOTAL_TRIALS,
     statusText: 'Initializing AR...',
     misses: 0,
     alignmentScore: 0,
     isAligned: false,
     targetDistanceM: null,
-    timeRemainingMs: 5000,
+    timeRemainingMs: TRIAL_TIMEOUT_MS,
     timeProgress: 1,
     confirmMode: technique === 'baseline' ? 'tap' : 'dwell',
     dwellProgress: 0,

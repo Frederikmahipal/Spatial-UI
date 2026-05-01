@@ -11,7 +11,7 @@ ViroMaterials.createMaterials({
 
 export const TARGET_RADIUS = 0.065;
 export const TOTAL_TRIALS = 10;
-export const TRIAL_TIMEOUT_MS = 5000;
+export const TRIAL_TIMEOUT_MS = 10000;
 export const INITIALIZATION_MIN_FRAMES = 8;
 export const INITIALIZATION_MIN_MOVEMENT_M = 0.04;
 
